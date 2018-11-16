@@ -1,20 +1,21 @@
-const express = require('express')
-const app = express()
+const { send } = require('micro')
+const { get, post, put, del } = require('microrouter')
+const monk = require('monk')
+const cors = require('micro-cors')()
 const port = 4000
-const mongoose = require('mongoose')
 require('dotenv').config()
 // const router = express.Router()
 
 app.listen(port, () => console.log(`Example app listening on port ${port}`))
 
 // Connect to mLab 
-mongoose.connect(process.env.DB_URL, { useNewUrlParser: true })
-mongoose.connection.once('open', () => {
+monk.connect(process.env.DB_URL, { useNewUrlParser: true })
+monk.connection.once('open', () => {
     console.log('Connected to database')
 })
 
 // Error connecting to DB
-mongoose.connection.on("error", console.error.bind(console, "MongoDB connection error"))
+monk.connection.on("error", console.error.bind(console, "MongoDB connection error"))
 
 // Create method for adding videos
 app.get("/", (req, res) => {
@@ -22,14 +23,14 @@ app.get("/", (req, res) => {
    });
 
 // Create Schema
-const videoSchema = new mongoose.Schema({
+const videoSchema = new monk.Schema({
     VideoURL: String,
     VideoTitle: String,
     VideoDesc: String,
 })
 
 // Create Model
-const VidModel = mongoose.model('VidModel', videoSchema)
+const VidModel = monk.model('VidModel', videoSchema)
 
 // Middleware
 const bodyParser = require('body-parser');
@@ -50,16 +51,10 @@ const getVideoByName = async (req, res) => {
 }
 
 // [POST] /video 200{} Create a Video
-app.post('/video', (req, res) => {
-    const VidData = new VidModel(req.body)
-    VidData.save()
-    .then(video => {
-        res.send('Video saved to the database')
-    })
-    .catch(err => {
-        res.status(400).send('Unable to save video to the database')
-    })
-})
+const createVideo = async (req, res) => {
+    const result = await video.find({}).then(results => (results))
+    send(res, 200, `Create the Video with ${req.body}`)
+}
 
 // [PUT] /video/id/:id 200{} Update Video
 const updateVideo = async (req, res) => {
