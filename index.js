@@ -1,52 +1,29 @@
 const { send } = require('micro')
-const { get, post, put, del } = require('microrouter')
+const { get, post, put, del, router } = require('microrouter')
 const monk = require('monk')
 const cors = require('micro-cors')()
-const port = 4000
-require('dotenv').config()
-// const router = express.Router()
+const db = require('./dbconfig')
 
-app.listen(port, () => console.log(`Example app listening on port ${port}`))
-
-// Connect to mLab 
-monk.connect(process.env.DB_URL, { useNewUrlParser: true })
-monk.connection.once('open', () => {
-    console.log('Connected to database')
+const video = db.get('vidmodels')
+db.then(() => {
+    console.log('Connected to the server')
 })
 
-// Error connecting to DB
-monk.connection.on("error", console.error.bind(console, "MongoDB connection error"))
-
-// Create method for adding videos
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html");
-   });
-
-// Create Schema
-const videoSchema = new monk.Schema({
-    VideoURL: String,
-    VideoTitle: String,
-    VideoDesc: String,
-})
-
-// Create Model
-const VidModel = monk.model('VidModel', videoSchema)
-
-// Middleware
-const bodyParser = require('body-parser');
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const getHome = async (req,res) => {
+    send(res, 200, 'Home Page')
+}
 
 // [GET] /video 200[] Get all of the Videos
 const getVideo = async (req, res) => {
-    const result = await video.find({}).then( results => ( results ) )
+    const result = await video.find({}).then( results => ( results ))
+    // console.log(res)
     send(res, 200, result)
 } 
 
 // [GET] /video/name/:name 200[] Get Video by Name
 const getVideoByName = async (req, res) => {
     let result = await video.find({}).then(results => (results))
-    result = result.filter(video => video.name.toLowerCase().includes(req.params.name.toLowerCase()))
+    result = result.filter(video => video.video_title.toLowerCase().includes(req.params.name.toLowerCase()))
     send(res, 200, result)
 }
 
@@ -69,10 +46,13 @@ const deleteVideo = async (req, res) => {
 }
 
 // Exports
-module.exports = [
-    get('/video', getVideo),
-    get('/video/name/:name', getVideoByName),
-    post('/video', createVideo),
-    put('/video/id/:id', updateVideo),
-    del('/video/id/:id', deleteVideo) 
-]
+module.exports = cors (
+    router(
+        get('/', getHome),
+        get('/video', getVideo),
+        get('/video/name/:name', getVideoByName),
+        post('/video', createVideo),
+        put('/video/id/:id', updateVideo),
+        del('/video/id/:id', deleteVideo) 
+    )
+)
