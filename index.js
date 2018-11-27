@@ -1,4 +1,4 @@
-const { send } = require('micro')
+const { send, json } = require('micro')
 const { get, post, put, del, router } = require('microrouter')
 const monk = require('monk')
 const cors = require('micro-cors')()
@@ -6,7 +6,7 @@ const db = require('./dbconfig')
 
 const video = db.get('vidmodels')
 db.then(() => {
-    console.log('Connected to the server')
+    console.log('Connected to the server my dude...')
 })
 
 const getHome = async (req,res) => {
@@ -18,7 +18,7 @@ const getVideo = async (req, res) => {
     const result = await video.find({}).then( results => ( results ))
     // console.log(res)
     send(res, 200, result)
-} 
+}
 
 // [GET] /video/name/:name 200[] Get Video by Name
 const getVideoByName = async (req, res) => {
@@ -29,20 +29,20 @@ const getVideoByName = async (req, res) => {
 
 // [POST] /video 200{} Create a Video
 const createVideo = async (req, res) => {
-    const result = await video.find({}).then(results => (results))
-    send(res, 200, `Create the Video with ${req.body}`)
+    const result = await video.insert( body ).then(results => (results))
+    send(res, 200, result)
 }
 
 // [PUT] /video/id/:id 200{} Update Video
 const updateVideo = async (req, res) => {
-    const result = await video.find({}).then(results => (results))
-    send(res, 200, `Update the Video with ID ${req.params.id} using ${req.body}`)
+    const result = await video.update({ "_id": req.params.id }, body ).then(results => (results))
+    send(res, 200, result)
 }
 
 // [DELETE] /video/id/:id 200{} Delete a Video
 const deleteVideo = async (req, res) => {
-    const result = await video.find({}).then(results => (results))
-    send(res, 200, `Delete the Video with ID - ${req.params.id}`)
+    const result = await video.remove({ "_id": req.params.id }).then(results => (results))
+    send(res, 200, result)
 }
 
 // Exports
