@@ -23,12 +23,20 @@ const getVideo = async (req, res) => {
 // [GET] /video/name/:name 200[] Get Video by Name
 const getVideoByName = async (req, res) => {
     let result = await video.find({}).then(results => (results))
-    result = result.filter(video => video.video_title.toLowerCase().includes(req.params.name.toLowerCase()))
-    send(res, 200, result)
+    result = result.filter(video => {
+        return video.video_title.replace(/\s/g, "").toLowerCase().includes(req.params.name.toLowerCase())
+    })
+    if (result){
+        send(res, 200, result) 
+    }
+    else {
+        send(res, 404, {})
+    }
 }
 
 // [POST] /video 200{} Create a Video
 const createVideo = async (req, res) => {
+    const body = await json(req)
     const result = await video.insert( body ).then(results => (results))
     send(res, 200, result)
 }
